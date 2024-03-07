@@ -1,321 +1,175 @@
-# I18N.DotNet
+I18N.DotNet Tool
+================
 
-[![Build](https://github.com/SafeTwice/I18N.DotNet/actions/workflows/Build.yml/badge.svg)](https://github.com/SafeTwice/I18N.DotNet/actions/workflows/Build.yml)
-[![Coverage Status](https://coveralls.io/repos/github/SafeTwice/I18N.DotNet/badge.svg)](https://coveralls.io/github/SafeTwice/I18N.DotNet)
+[![Build](https://github.com/SafeTwice/I18N.DotNet-Tool/actions/workflows/Build.yml/badge.svg)](https://github.com/SafeTwice/I18N.DotNet-Tool/actions/workflows/Build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/SafeTwice/I18N.DotNet-Tool/badge.svg)](https://coveralls.io/github/SafeTwice/I18N.DotNet)
 
 ## About
 
-I18N.DotNet is a .NET library written in C# to enable simple internationalization (I18N) / localization (L10N) (i.e. translation to different languages) of .NET applications and libraries.
-
-The companion utility [I18N.DotNet Tool](https://github.com/SafeTwice/I18N.DotNet/tree/main/Tool) is provided to ease management of translation files.
+The I18N.DotNet Tool utility can be used to generate, update, analyze and deploy translation files for the [I18N.DotNet](https://github.com/SafeTwice/I18N.DotNet) library.
 
 ## Installation
 
-The easiest way to install I18N.DotNet is using the NuGet package: https://www.nuget.org/packages/I18N.DotNet/
+The easiest way to install I18N.DotNet Tool is using the NuGet package: https://www.nuget.org/packages/I18N.DotNet.Tool/
 
-## Getting Started
+## Usage
 
-To use the I18N.DotNet library, three steps must be followed:
-
-1. Write/modify the source code to internationalize strings that must be translated (see [Writing/Adapting Source Code (I18N)](#writingadapting-source-code-i18n)).
-2. Write translations for internationalized strings (see [Writing Translations (L10N)](#writing-translations-l10n)).
-3. Embed the translations file in the executable (see [Embedding the Translations File](#embedding-the-translations-file)).
-
-### Writing/Adapting Source Code (I18N)
-
-When writing internationalized source code, the strings to be translated must be wrapped with a call to `I18N.DotNet.Global.Localize()`.
-
-The easier and most convenient approach for writing internationalized software is to choose a language that will be used as the base language throughout the software development (e.g., English), and then write the software just as any non-internationalized source code, except that strings to be translated must be wrapped with calls to `Localize()`. This way the base language will act as the default language when translations are not available for the current target language.
-
-Adapting exising non-internationalized source code is as easy as wrapping the existing strings to be translated with calls to `Localize()`.
-
-###### Example (C#)
-``` CS
-using static I18N.DotNet.Global;
-using System;
-using System.IO;
-
-public class Program
-{
-  static void Main( string[] args )
-  {
-    int i = 0x555;
-
-    Console.WriteLine( Localize( "Plain string to be translated" ) );
-    Console.WriteLine( Localize( $"Interpolated string to be translated with value {i:X4}" ) );
-  }
-}
+When installed from the [NuGet package](https://www.nuget.org/packages/I18N.DotNet.Tool/):
+``` powershell
+dotnet i18n-tool <command> [COMMAND-OPTIONS...]
 ```
 
-### Writing Translations (L10N)
+When executed from the tool compiled using Visual Studio:
+``` powershell
+I18N.DotNet.Tool.exe <command> [COMMAND-OPTIONS...]
+```
 
-String translations must be stored in an XML file (the translations file) with root element `I18N`.
+This tool accepts three different commands:
 
-For each string than has been internationalized an `Entry` element under the root must be defined, with:
+| Command                       | Description                                                      |
+| -                             | -                                                                |
+| [parse](#parse-command)       | Parses source files and generates or updates a translations file |
+| [analyze](#analyze-command)   | Analyzes a translations file                                     |
+| [deploy](#deploy-command)     | Generates a translations file suitable for deployment            |
 
-- A single `Key` child element which value is the internationalized string defined in the code (replacing for interpolated strings the interpolated expressions with their positional index).
-- `Value`child elements with their attribute `lang` set to the target language of the translation and which value is the translated string.
+### Workflow
 
-The companion utility [I18N.DotNet Tool](Tool/) can be used to ease the creation of the translations file by scanning source files and automatically generating entries for discovered internationalized strings.
+The typical workflow to manage translation files after source code updates (i.e., when new internationalized strings are added to source code) follows these steps:
+
+1. Use the [parse](#parse-command) command to analyze source files and create/update an intermediate translations file used for working on translations (the "development" I18N file).
+2. Use the [analyze](#analyze-command) command to analyze the "development" I18N file to search for issues, deprecated entries and missing translations.
+3. If needed, update the "development" I18N file solving issues, removing or updating deprecated entries, and adding translations for new entries; then return to step 2 to check for non-resolved issues.
+4. Use the [deploy](#deploy-command) commmmand to generate the "deployment" I18N file that will be embedded or distributed with the application or library.
+
+## Commands
+
+### Parse Command
+
+This command extracts translation keys from source code by scanning source code files and, for each discovered internationalized string, it generates in the output file an `Entry` element with a `Key` element which value is set to the discovered internationalized string (if such entry does not already exist). Localization can be then performed by adding `Value` elements for each translation of the entries' keys to different languages.
+
+To discover internationalized strings the tool searches for plain strings and interpolated strings that are used as the first argument to methods named `Localize` or `LocalizeFormat`.
+
+Generated entries are decorated with "founding" comments indicating the source file and optionally the line where the internationalized string was found, to allow obtaining the context in which the string appears in order to improve translations. This also eases the task of introducing context partitions (see [Contexts](#contexts)).
+
+If the output file already exists, the tool preserves the existing XML elements (except "founding" comments), i.e., it does not delete any existing entries even if the entry's key is not found anymore in the source code.
+
+##### Command Options
+
+| Option                                         | Description                                            |
+| -                                              | -                                                      |
+| -S &lt;sources-dir> _[&lt;sources-dir-2 ...>]_ | Source directory paths                                 |
+| -o &lt;output-file>                            | Output file path                                       |
+| -p &lt;input-files-pattern>                    | Input files name pattern (default: *.cs)               |
+| -r                                             | Scan in input directories recursively                  |
+| -k                                             | Preserve founding comments in output file              |
+| -d                                             | Mark deprecated entries                                |
+| -l                                             | Include line numbers in founding comments              |
+| -E &lt;func-name> _[&lt;func-name-2 ...>]_     | Extra methods to be parsed for strings to be localized |
+
+At least one source files directory path must be passed using the `-S` option, and the output file must be specified using the `-o` option.
+
+Input directories are by default not scanned recursively navigating into nested directories. Use the `-r` option to perform recursive scan on the input directories.
+
+Internationalized strings are by default located by searching for plain strings and interpolated strings that are used as the first argument to methods named `Localize` or `LocalizeFormat`. If you define your own classes that define methods that wrap internationalization functionality (i.e., which internally call `Localizer` methods), then these additional methods can be also parsed using the `-E` option (as long as these methods take the strings to be localized as their first parameter).
+
+Existing "founding" comments in the output file that indicate where a key was found in the source code are not preserved by default. To avoid this behavior, use the option `-k` to keep all "founding" comments.
+
+Using the option `-d` makes the tool add a comment indicating that the entry is deprecated to previously existing entries in the output file which keys do not correspond to a key found in the source code.
+
+By default "founding" comments just indicate the file where a key was found to avoid having too many changes in the translations file during development (even when no new translation keys are introduced). Using the option `-l` makes the tool include the line number where a key was found to "founding" comments.
+
+##### Parsing Examples
+
+Generate (or update) the translations file from all the sources found recursively in the _Sources_ folder:
+``` powershell
+dotnet i18n-tool parse -o MyApp.I18N.xml -r -d -S Sources\
+```
+### Analyze Command
+
+This command analyzes a translations file to indicate the presence of deprecated entries and/or entries without translations for any, one or several languages.
+
+##### Command Options
+
+| Option                                     | Description                                            |
+| -                                          | -                                                      |
+| -i &lt;output-file>                        | Input file path                                        |
+| -d                                         | Check presence deprecated entries                      |
+| -L &lt;language> _[&lt;language-2 ...>]_   | Check for entries without translation for one or more languages ('*' for any) |
+| -C &lt;context> _[&lt;context-2 ...>]_     | Contexts to include in analysis (default: all)         |
+| -E &lt;context> _[&lt;context-2 ...>]_     | Contexts to exclude from analysis (default: none)      |
+
+At least one input file path must be specified using the `-i` option.
+
+The `-d` option makes the tool to check for the presence of deprecated entries (i.e., entries with no foundings).
+
+The `-L` options makes the tool to check for the presence of entries with do not have translations defined for any of the languages passed. Pass `*` to check for entries which do not have a translation for any language.
+
+Not passing neither `-d` nor `-L` is equivalent to `-d -L *`.
+
+The `-C` option is used to indicate the contexts to include in analysis, and the `-E` options is used to indicate the context to exclude from analysis. Leading and trailing `/` context delimiters are options. The `*` character may be used as a wildcard. Alternatively, if the context begins with `@` then the following expression will be used as a regular expression to match contexts.
+
+##### Analysis Examples
+
+Check for deprecated entries and entries without translations for any language in all contexts:
+``` powershell
+dotnet i18n-tool analyze -i MyApp.I18N.xml
+```
+
+Check for deprecated entries in context */Context 1/* and its nested contexts except for */Context 1/Context2/*:
+``` powershell
+dotnet i18n-tool analyze -i MyApp.I18N.xml -d -C "Context 1/*" -E "Context 1/Context2"
+```
+
+Check for entries without translations for languages *es* or *fr* in nested contexts of */Context 1/* or */Context 2/*:
+``` powershell
+dotnet i18n-tool analyze -i MyApp.I18N.xml -L es fr -C "@^/Context [12]/.+$"
+```
+
+##### Disable Missing Translations Warnings
+
+Some translation entries may not need translations to some languages, generally because the translation is the same than the base language (e.g., _"ERROR"_ is the same in English and in Spanish, _"OK"_ may be used in many languages without translation, _"{0} / {1}"_ has no translatable words but it may still be useful to treat it as internationalized text to allow changing the format for some cultures, etc.).
+
+In these cases, if no translation is provided for some languages, the base language translation will be appropiately used by the I18N.DotNet library, however a warning will be emitted by the tool when performing an analysis looking for missing translations.
+
+To avoid these warnings, add a `lang` attribute to the `Entry`'s `Key` element set to the comma-separated list of languages that do not require translation. The `Key`'s `lang` attribute may also be set to `*` to avoid warnings for any missing translation.
 
 ###### Example
 ``` XML
 <?xml version="1.0" encoding="utf-8"?>
 <I18N>
   <Entry>
-    <Key>Plain string to be translated</Key>
-    <Value lang="es">String simple a traducir</Value>
-    <Value lang="fr">String simple à traduire</Value>
+    <Key lang="*">{0} / {1}</Key>
+    <Value lang="es">{0} de {1}</Value>
   </Entry>
   <Entry>
-    <Key>Interpolated string to be translated with value {0:X4}</Key>
-    <Value lang="es">String interpolado a traducir con valor {0:X4}</Value>
-    <Value lang="fr">String interpolé à traduire avec valeur {0:X4}</Value>
+    <Key lang="es">ERROR</Key>
+    <Value lang="fr">ERREUR</Value>
   </Entry>
 </I18N>
 ```
 
-### Embedding the Translations File
+### Deploy Command
 
-A very convenient way of distributing the translations for an application is to embedded the translations file in the executable assembly as an embedded resource identified by _Resources.I18N.xml_.
+This command deploys a translations file ready for deployment generated from a "development" translations file.
 
-Using Visual Studio, the easiest way to achieve this is to name the translations file _"I18N.xml"_ and store it in a directory named  _"Resources"_ inside the VS project directory, and then configure the file in the VS project as an embedded resource (i.e., set its Build Action to "Embedded resource" in the IDE, or add `<EmbeddedResource Include="Resources\I18N.xml" />` to an `ItemGroup` in the project file).
+Translations files generated by the `parse` command contain information useful for development (e.g., writing translations, checking missing and deprecated translations, etc.), but may not be suitable for deployment because they contain comments and development information that may not have to be disclosed.
 
-###### Example (.csproj)
-``` XML
-<Project Sdk="Microsoft.NET.Sdk">
-  ...
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\I18N.xml" />
-  </ItemGroup>
-</Project>
+This command takes a "development" translations file and generates a translations file suitable for deployment, stripped out from comments, entries without translations, empty contexts, and attributes useless for runtime execution.
+
+If the output file already exists, the tool overwrites its contents.
+
+##### Command Options
+
+| Option                                         | Description                                            |
+| -                                              | -                                                      |
+| -i &lt;input-file>                             | Input file path                                        |
+| -o &lt;output-file>                            | Output file path                                       |
+
+Both the input and output file must be specified using the  `-i` and `-o` options.
+
+##### Deployment Examples
+
+Generate the deployment translation file from a development translations file:
+``` powershell
+dotnet i18n-tool deploy -i Sources/MyApp.I18N.xml -o Resources/MyApp.I18N.xml
 ```
-
-
-## Advanced Usage
-
-### Global Localizer
-
-The static class `GlobalLocalizer` has the property `Localizer` which contains the global localizer. This instance is shared and can be conveniently used by all software components. In fact all the methods exposed by the `Global` class are just convenience wrappers that call the global localizer.
-
-The instance of `Global.Localizer` is created automatically on first usage (if not having been set previously) with a default `Localizer` (see [Localizer Class](#localizer-class)). This default localizer has the target language set to the current UI language, and tries to load the translations file from an embedded resource identified by _Resources.I18N.xml_ inside the entry (application) assembly.
-
-The default behavior is just right for most use cases, but `Global.Localizer` can be set with a different localizer during application startup or dynamically during execution (e.g., to use a different language than the current UI language, see [Specifying the Translation Target Language](#specifying-the-translation-target-language)).
-
-Additionally, if the translations file is stored in an embedded resource with a different identifier, or in a separate file (e.g., installed alongside the application executable), the `LoadXML` method can be invoked on the global localizer to load it.
-
-###### Non-Default usage Example (C#)
-``` CS
-void SetupI18N( string language, string directoryPath )
-{
-  Global.Localizer = new Localizer( language );
-  Global.Localizer.LoadXML( directoryPath + "/I18N.xml" );
-}
-```
-
-### Local Localizers
-
-If necessary, additional instances of the `Localizer` class can be created (local localizers), loaded with string translations, and then passed to software components for being used instead of the global localizer.
-
-For most cases using the global localizer (and optionally [Contexts](#contexts)) is just enough, but local localizers can be useful for example to implement report generation in different languages than the application UI language (see [Specifying the Translation Target Language](#specifying-the-translation-target-language)).
-
-### Language Identifiers & Variants
-
-Any arbitrary string can be used for identifying languages, although it is recommended to use identifiers formed by a ISO 639-1 alpha-2 language name (2-letter language codes, e.g., _"en"_, _"es"_), additionally followed by an hyphen and a ISO 3166-1 alpha-2 country/region name (e.g., _"en-US"_, _"es-ES"_).
-
-Language identifiers are processed as case-insensitive (i.e., _"fr-FR"_ is equivalent to _"fr-fr"_).
-
-When using language identifiers formed by a primary code and a variant code separated by an hyphen (e.g., _"en-us"_, _"es-es"_), if a localized conversion for the language variant is not found then a conversion for the primary (base) language is tried too.
-
-For example, when loading the translations on a `Localizer` created for the _"en-gb"_ language, for each string to be translated a translation for the language _"en-gb"_ will be searched first, and if not found then a translation for the language _"en"_ will be searched next.
-
-It is therefore recommended to:
-
-- Use primary-variant code (e.g., _"en-us"_, _"es-es"_) as target language identifiers (i.e., as arguments to the `Localizer` constructor).
-- Use primary code (e.g., _"en"_, _"fr"_) as translation language identifiers (i.e, as the `lang` attribute values of XML `I18N.Entry.Value` entries) for generic (non variant-specific) translations.
-- Use primary code-variant (e.g., _"en-gb"_, _"es-ar"_) as translation language identifiers (i.e, as the `lang` attribute values of XML `I18N.Entry.Value` entries) for variant-specific translations.
-
-### String Format
-
-Calls to `String.Format()` where the format string has to be internationalized can be replaced by a call to `Global.LocalizeFormat()` or `ILocalizer.LocalizeFormat()`.
-
-###### Example (C#)
-``` CS
-String.Format( Localize( "Format string to be translated with value {0}" ), myVar );
-// is equivalent to
-LocalizeFormat( "Format string to be translated with value {0}", myVar );
-```
-
-### Contexts
-
-Sometimes the same source language string has different translations in different contexts (e.g., English _"OK"_ should be translated in Spanish to _"Aceptar"_ for a button label but to _"Correcto"_ for a successful outcome indication).
-
-Since the source language key is the same in both cases, context partitioning must be used, which affects the source code side and the translations file side.
-
-##### Context Partitioning in Source Code (I18N)
-
-In source code, the context of the key can be explicitly indicated when the string is being internationalized by calling `Global.Context()` or `ILocalizer.Context()` and passing it the context identifier, and then calling the localization methods on the returned context `ILocalizer`.
-
-Contexts can be nested. A chain of successively nested contexts can be identified by joining their identifiers using the dot character ('.') as a composite context identifier.
-
-Translations in a context are searched hierarchically: if a translation is not found for the target language in is context (neither for the language variant nor the primary language), then a translation is searched again on its parent context (if it exists).
-
-###### Example (C#)
-``` CS
-Button.Label = Context( "GUI.Button" ).Localize( "OK" );
-// ...
-TextBox.Text = Context( "GUI" ).Context( "Status" ).Localize( "OK" );
-```
-
-##### Context Partitioning in the Translation File (L10N)
-
-Context partitioning is performed in the translations XML file using `Context` elements as children of the root element or nested within other `Context` elements. These elements must have an `id` attribute to indicate the context identifier (which can be a composite context identifier), and are containers for the `Entry` elements that define the translations for that context.
-
-###### Example
-``` XML
-<?xml version="1.0" encoding="utf-8"?>
-<I18N>
-  <Entry>
-    <Key>OK</Key>
-    <Value lang="fr">O.K.</Value>
-  </Entry>
-  <Context id="GUI">
-    <Context id="Button">
-      <Entry>
-        <Key>OK</Key>
-        <Value lang="es">Aceptar</Value>
-      </Entry>
-    </Context>
-    <Context id="Status">
-      <Entry>
-        <Key>OK</Key>
-        <Value lang="es">Correcto</Value>
-      </Entry>
-    </Context>
-  </Context>
-</I18N>
-```
-
-### ILocalizer Interface
-
-The `ILocalizer` interface represents classes which are responsible for providing localization functionality (i.e. perform string translations) for software components.
-
-### Localizer Class
-
-The `Localizer` class is a simple implementation of the `ILocalizer` [interface](#ilocalizer-interface), and is capable of loading string translations from a translations file for a single target language and then providing localization functionality.
-
-#### Specifying the Translation Target Language
-
-The default `Localizer` constructor sets the target language for translations to the current UI language (obtained from `System.Globalization.CultureInfo.CurrentUICulture`).
-
-To specify a different target language use the `Localizer` constructor that accepts a language identifier as a parameter.
-
-###### Example (C#)
-``` CS
-void SetupI18N( string language )
-{
-  Global.Localizer = new Localizer( language );
-}
-```
-
-#### Loading the Translations File
-
-The translations file can be loaded into a `Localizer` by different ways:
-
-##### From an Embedded Resource
-
-The easiest way of using translation files is to embed them into an executable assembly (application or library), then load them into a `Localizer` instance using the `LoadXML` method indicating the assembly to load the embedded resource from and its identifier.
-
-
-> Note: The [global localizer](#global-localizer) will automatically try to load the translations file from an embedded resource identified by _Resources.I18N.xml_ in the entry assembly.
-
-###### Example (C#)
-``` CS
-void SetupI18N()
-{
-  Global.Localizer.LoadXML( Assembly.GetExecutingAssembly(), "I18N.Translations.xml" );
-}
-```
-
-##### From a Standalone File
-
-If the translations file is stored as a separate file (e.g., installed alongside the application executable), the `LoadXML` method can be invoked on a `Localizer` instance passing the path to the file.
-
-###### Example (C#)
-``` CS
-void SetupI18N()
-{
-  var programPath = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
-
-  Global.Localizer.LoadXML( programPath + "/I18N.xml" );
-}
-```
-
-##### From a Stream
-
-When the translations file are neither stored as a file or embedded resource (e.g., downloading the translations from a remote server to local memory, obtaining the translations from a database), the `LoadXML` method can be invoked on a `Localizer` instance passing a `System.IO.Stream` object which must provide the file contents.
-
-
-## Advanced Usage (Libraries)
-
-### Library Localizers
-
-The [global localizer](#global-localizer) is convenient for usage in applications (i.e., which are implemented in the entry assembly), but libraries should not use the [global localizer](#global-localizer) because they would depend on the application to load the translations for its internationalized strings or risk the application discarding the translations if trying to load them automatically.
-
-For libraries the easiest solution is to define their own "global" localizer as a static property inside a static class, similar to the `Global` class but only intended for the scope of the library.
-
-This library localizer can be initialized using an instance of `AutoLoadLocalizer`, which is a special localizer which automatically loads the translations file from an embedded resource (see [AutoLoadLocalizer Class](#autoloadlocalizer-class)).
-
-The static class can be declared with `internal` scope, or with `public` scope to allow applications to extend or replace the library localizer (e.g., to add more translations, or to change them).
-
-Finally, the translations file for the library must be embedded in the library assembly as an embedded resource identified by _Resources.I18N.xml_ (just like with an application), which the `AutoLoadLocalizer` instance will try to load by default.
-
-###### Library Localizer Implementation Example (C#)
-``` CS
-using I18N.DotNet;
-using System;
-
-namespace ExampleLibrary
-{
-  public static class LibraryLocalizer
-  {
-    public static ILocalizer Localizer { get; set; } = new AutoLoadLocalizer();
-
-    internal static string Localize( PlainString text ) => Localizer.Localize( text );
-    internal static string Localize( FormattableString text ) => Localizer.Localize( text );
-  }
-}
-```
-
-###### Library Localizer Usage Example (C#)
-``` CS
-using static ExampleLibrary.LibraryLocalizer;
-using System;
-
-namespace ExampleLibrary
-{
-  public class ExampleClass
-  {
-    public void SomeMethod()
-    {
-      Console.WriteLine( Localize( "Plain string to be translated" ) );
-      Console.WriteLine( Localize( $"Interpolated string to be translated with value {i:X4}" ) );
-    }
-  }
-}
-```
-
-### AutoLoadLocalizer Class
-
-The `AutoLoadLocalizer` class is an implementation of the `ILocalizer` [interface](#ilocalizer-interface) that loads automatically the translations file from an embedded resource in an assembly.
-
-The default parameters for the `AutoLoadLocalizer` constructor make the created instance load the translations file from an embedded resource identified by _Resources.I18N.xml_ in the calling assembly (i.e., in the assembly that creates the instance).
-
-A different resource identifier or assembly can be used as parameters to the `AutoLoadLocalizer` constructor if necessary.
-
-
-## Full API Documentation
-
-You can browse the full API documentation for:
- - [The last release (stable)](https://safetwice.github.io/I18N.DotNet/stable)
- - [Main branch (unstable)](https://safetwice.github.io/I18N.DotNet/main)
