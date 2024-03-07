@@ -25,6 +25,7 @@ namespace I18N.DotNet.Tool.Test
             @"TempDir2\TempFile3.cs",
             @"TempDir2\TempFile4.cs",
             @"TempDir2\TempFile5.bar",
+            @"TempDir2\TempFile6.xml",
             @"TempDir2\TempDir22\TempFile6.cs",
             @"TempDir2\TempDir22\TempFile7.bar",
         };
@@ -655,11 +656,48 @@ namespace I18N.DotNet.Tool.Test
         }
 
         [Fact]
+        public void Generate_SourceDirectoryNotExisting()
+        {
+            // Prepare
+
+            var options = new ParseSourcesOptions()
+            {
+                SourcesDirectories = new string[] { Path.GetTempPath() + @"\SJDJKASJ3456f", Path.GetTempPath() + @"\TempDir2" },
+                OutputFile = Path.GetTempPath() + @"\bar.xml",
+            };
+
+            var callSequence = new MockSequence();
+
+            var sourceFileParserMock = new Mock<ISourceFileParser>();
+            var i18nFileMock = new Mock<II18NFile>();
+
+            var textConsoleMock = new Mock<ITextConsole>();
+            textConsoleMock.InSequence( callSequence ).Setup( c => c.WriteLine( It.IsAny<string>(), true ) );
+
+            // Execute
+
+            int ret = Program.ParseSources( options, i18nFileMock.Object, sourceFileParserMock.Object, textConsoleMock.Object );
+
+            // Verify
+
+            Assert.Equal( 1, ret );
+
+            textConsoleMock.Verify( c => c.WriteLine( It.Is<string>( s => s.Contains( "ERROR: Source directory" ) && s.Contains( "does not exist" ) &&
+                                    s.Contains( "SJDJKASJ3456f" ) ), true ), Times.Once );
+
+            sourceFileParserMock.VerifyNoOtherCalls();
+            i18nFileMock.VerifyNoOtherCalls();
+            textConsoleMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
         public void Analize_Deprecated()
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -717,7 +755,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -776,7 +816,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -824,7 +866,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -903,7 +947,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -964,7 +1010,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -1051,7 +1099,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -1121,7 +1171,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -1157,7 +1209,9 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
 
             var options = new AnalyzeOptions()
             {
@@ -1189,12 +1243,48 @@ namespace I18N.DotNet.Tool.Test
         }
 
         [Fact]
-        public void Deploy_Default()
+        public void Analyze_InputFileNotExisting()
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
-            string outputFilePath = @"C:\Bar.xml";
+            string inputFilePath = Path.GetTempPath() + @"\Foo.xml";
+
+            var options = new AnalyzeOptions()
+            {
+                InputFile = inputFilePath,
+                CheckDeprecated = true,
+            };
+
+            var callSequence = new MockSequence();
+
+            var i18nFileMock = new Mock<II18NFile>();
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( inputFilePath ) ).Throws( new Exception( "foo" ) );
+
+            var textConsoleMock = new Mock<ITextConsole>();
+            textConsoleMock.InSequence( callSequence ).Setup( c => c.WriteLine( It.IsAny<string>(), It.IsAny<bool>() ) );
+
+            // Execute
+
+            int ret = Program.Analyze( options, i18nFileMock.Object, textConsoleMock.Object );
+
+            // Verify
+
+            Assert.Equal( 1, ret );
+
+            textConsoleMock.Verify( c => c.WriteLine( It.Is<string>( s => s.Contains( "ERROR: Input file" ) && s.Contains( "does not exist" ) &&
+                                    s.Contains( "Foo.xml" ) ), true ), Times.Once );
+
+            i18nFileMock.VerifyNoOtherCalls();
+            textConsoleMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public void Deploy_Default()
+        {
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
+            string outputFilePath = Path.GetTempPath() + @"\TempDir1\Bar.xml";
 
             var options = new DeployOptions()
             {
@@ -1235,8 +1325,10 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
-            string outputFilePath = @"C:\Bar.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
+            string outputFilePath = Path.GetTempPath() + @"\TempDir1\Bar.xml";
 
             var options = new DeployOptions()
             {
@@ -1272,8 +1364,10 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
-            string outputFilePath = @"C:\Bar.xml";
+            CreateTempFiles();
+
+            string inputFilePath = Path.GetTempPath() + @"\TempDir2\TempFile6.xml";
+            string outputFilePath = Path.GetTempPath() + @"\TempDir1\Bar.xml";
 
             var options = new DeployOptions()
             {
@@ -1309,7 +1403,7 @@ namespace I18N.DotNet.Tool.Test
         {
             // Prepare
 
-            string inputFilePath = @"C:\Foo.xml";
+            string inputFilePath = Path.GetTempPath() + @"\Foo.xml";
             string outputFilePath = Path.GetTempPath() + @"ETYYLEW87832y74nh23hWHSJD\bar.xml";
 
             var options = new DeployOptions()
@@ -1340,5 +1434,40 @@ namespace I18N.DotNet.Tool.Test
             textConsoleMock.VerifyNoOtherCalls();
         }
 
+        [Fact]
+        public void Deploy_InputFileNotExisting()
+        {
+            // Prepare
+
+            string inputFilePath = Path.GetTempPath() + @"\Foo.xml";
+            string outputFilePath = Path.GetTempPath();
+
+            var options = new DeployOptions()
+            {
+                InputFile = inputFilePath,
+                OutputFile = outputFilePath,
+            };
+
+            var callSequence = new MockSequence();
+
+            var i18nFileMock = new Mock<II18NFile>();
+
+            var textConsoleMock = new Mock<ITextConsole>();
+            textConsoleMock.InSequence( callSequence ).Setup( c => c.WriteLine( It.IsAny<string>(), true ) );
+
+            // Execute
+
+            int ret = Program.Deploy( options, i18nFileMock.Object, textConsoleMock.Object );
+
+            // Verify
+
+            Assert.Equal( 1, ret );
+
+            textConsoleMock.Verify( c => c.WriteLine( It.Is<string>( s => s.Contains( "ERROR: Input file" ) && s.Contains( "does not exist" ) &&
+                                    s.Contains( "Foo.xml" ) ), true ), Times.Once );
+
+            i18nFileMock.VerifyNoOtherCalls();
+            textConsoleMock.VerifyNoOtherCalls();
+        }
     }
 }

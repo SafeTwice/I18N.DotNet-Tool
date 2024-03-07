@@ -100,12 +100,14 @@ namespace I18N.DotNet.Tool
         {
             try
             {
-                CheckFileDirectoryExists( options.OutputFile );
+                CheckFileDirectoryExists( options.OutputFile, CATEGORY_OUTPUT );
 
                 var rootContext = new Context();
 
                 foreach( var directory in options.SourcesDirectories )
                 {
+                    CheckDirectoryExists( directory, CATEGORY_SOURCE );
+
                     var dirInfo = new DirectoryInfo( directory );
 
                     ParseSourcesInDirectory( sourceFileParser, dirInfo, options.SourceFilesPattern, options.Recursive, options.ExtraLocalizationFunctions, rootContext );
@@ -147,6 +149,8 @@ namespace I18N.DotNet.Tool
         {
             try
             {
+                CheckFileExists( options.InputFile, CATEGORY_INPUT );
+
                 inputFile.LoadFromFile( options.InputFile );
 
                 var includeContexts = options.IncludeContexts.Select( s => ContextSpecToRegex( s ) );
@@ -255,7 +259,8 @@ namespace I18N.DotNet.Tool
         {
             try
             {
-                CheckFileDirectoryExists( options.OutputFile );
+                CheckFileDirectoryExists( options.OutputFile, CATEGORY_OUTPUT );
+                CheckFileExists( options.InputFile, CATEGORY_INPUT );
 
                 outputFile.LoadFromFile( options.InputFile );
 
@@ -313,18 +318,31 @@ namespace I18N.DotNet.Tool
             }
         }
 
-        private static void CheckFileDirectoryExists( string filepath )
+        private static void CheckFileDirectoryExists( string filepath, string category )
         {
             var directory = Path.GetDirectoryName( filepath ) ?? string.Empty;
 
-            if( directory.Length == 0 )
+            CheckDirectoryExists( directory, category );
+        }
+
+        private static void CheckDirectoryExists( string path, string category )
+        {
+            if( path.Length == 0 )
             {
-                directory = ".";
+                path = ".";
             }
 
-            if( !Directory.Exists( directory ) )
+            if( !Directory.Exists( path ) )
             {
-                throw new ApplicationException( $"Output directory '{directory}' does not exist" );
+                throw new ApplicationException( $"{category} directory '{path}' does not exist" );
+            }
+        }
+
+        private static void CheckFileExists( string filepath, string category )
+        {
+            if( !File.Exists( filepath ) )
+            {
+                throw new ApplicationException( $"{category} file '{filepath}' does not exist" );
             }
         }
 
@@ -338,5 +356,8 @@ namespace I18N.DotNet.Tool
         private const int EXIT_CODE_ERROR = 1;
         private const int EXIT_CODE_WARNING = 2;
 
+        private const string CATEGORY_INPUT = "Input";
+        private const string CATEGORY_OUTPUT = "Output";
+        private const string CATEGORY_SOURCE = "Source";
     }
 }

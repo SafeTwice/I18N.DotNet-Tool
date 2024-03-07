@@ -165,11 +165,7 @@ namespace I18N.DotNet.Tool
             return Regex.Replace( text, @"([\n\r\f\t\v\b\\])", m =>
             {
                 var payload = m.Groups[ 1 ].Value;
-                if( ESCAPE_CODES.TryGetValue( payload, out var result ) )
-                {
-                    return result;
-                }
-                return payload;
+                return ESCAPE_CODES[ payload ];
             } );
         }
 
