@@ -52,9 +52,9 @@ namespace I18N.DotNet.Tool
             PreparePreexistingEntries( Root );
         }
 
-        public void DeleteFoundingComments()
+        public void DeleteFindingComments()
         {
-            DeleteFoundingComments( Root );
+            DeleteFindingComments( Root );
         }
 
         public void PrepareForDeployment()
@@ -175,7 +175,7 @@ namespace I18N.DotNet.Tool
 
                 foreach( var keyInfo in context.KeyMatches[ key ] )
                 {
-                    var comment = $"{FOUNDING_HEADING} {keyInfo.File} ";
+                    var comment = $"{FINDING_HEADING} {keyInfo.File} ";
                     if( reportLines )
                     {
                         comment += $"@ {keyInfo.Line} ";
@@ -192,7 +192,7 @@ namespace I18N.DotNet.Tool
             }
         }
 
-        private static void DeleteFoundingComments( XElement element )
+        private static void DeleteFindingComments( XElement element )
         {
             var commentsToRemove = new List<XComment>();
 
@@ -200,7 +200,7 @@ namespace I18N.DotNet.Tool
             {
                 foreach( var node in entryElement.Nodes() )
                 {
-                    if( ( node is XComment comment ) && ( comment.Value.StartsWith( FOUNDING_HEADING ) ) )
+                    if( ( node is XComment comment ) && ( comment.Value.StartsWith( FINDING_HEADING ) ) )
                     {
                         commentsToRemove.Add( comment );
                     }
@@ -211,7 +211,7 @@ namespace I18N.DotNet.Tool
 
             foreach( var contextElement in element.Elements( CONTEXT_TAG ) )
             {
-                DeleteFoundingComments( contextElement );
+                DeleteFindingComments( contextElement );
             }
         }
 
@@ -414,7 +414,7 @@ namespace I18N.DotNet.Tool
             foreach( var entryElement in element.Elements( ENTRY_TAG ) )
             {
                 bool deprecated = false;
-                bool hasFoundings = false;
+                bool hasFindings = false;
 
                 foreach( var node in entryElement.Nodes() )
                 {
@@ -426,14 +426,14 @@ namespace I18N.DotNet.Tool
                             deprecated = true;
                             break;
                         }
-                        else if( commentValue.StartsWith( FOUNDING_HEADING ) )
+                        else if( commentValue.StartsWith( FINDING_HEADING ) )
                         {
-                            hasFoundings = true;
+                            hasFindings = true;
                         }
                     }
                 }
 
-                if( deprecated || !hasFoundings )
+                if( deprecated || !hasFindings )
                 {
                     yield return entryElement;
                 }
@@ -630,7 +630,7 @@ namespace I18N.DotNet.Tool
 
         private const string DEPRECATED_COMMENT = " DEPRECATED ";
 
-        private const string FOUNDING_HEADING = " Found in:";
+        private const string FINDING_HEADING = " Found in:";
 
         //===========================================================================
         //                           PRIVATE ATTRIBUTES

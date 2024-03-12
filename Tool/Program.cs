@@ -31,14 +31,14 @@ namespace I18N.DotNet.Tool
         [Option( 'r', "recursive", Default = false, HelpText = "Scan in source directories recursively." )]
         public bool Recursive { get; set; }
 
-        [Option( 'k', "preserve-foundings", Default = false, HelpText = "Preserve founding comments in output file." )]
-        public bool PreserveFoundingComments { get; set; }
+        [Option( 'k', "preserve-findings", Default = false, HelpText = "Preserve finding comments in output file." )]
+        public bool PreserveFindingComments { get; set; }
 
         [Option( 'd', "mark-deprecated", Default = false, HelpText = "Mark deprecated entries." )]
         public bool MarkDeprecated { get; set; }
 
-        [Option( 'l', "with-lines", Default = false, HelpText = "Include line numbers in founding comments." )]
-        public bool LineIndicationInFoundingComments { get; set; }
+        [Option( 'l', "with-lines", Default = false, HelpText = "Include line numbers in finding comments." )]
+        public bool LineIndicationInFindingComments { get; set; }
 
         [Option( 'E', "extra-methods", HelpText = "Extra methods to be parsed for strings to be localized." )]
         public IEnumerable<string> ExtraLocalizationFunctions { get; set; } = new List<string>();
@@ -115,12 +115,12 @@ namespace I18N.DotNet.Tool
 
                 outputFile.LoadFromFile( options.OutputFile );
 
-                if( !options.PreserveFoundingComments )
+                if( !options.PreserveFindingComments )
                 {
-                    outputFile.DeleteFoundingComments();
+                    outputFile.DeleteFindingComments();
                 }
 
-                outputFile.CreateEntries( rootContext, options.LineIndicationInFoundingComments );
+                outputFile.CreateEntries( rootContext, options.LineIndicationInFindingComments );
 
                 if( options.MarkDeprecated )
                 {

@@ -49,9 +49,9 @@ This command extracts translation keys from source code by scanning source code 
 
 To discover internationalized strings the tool searches for plain strings and interpolated strings that are used as the first argument to methods named `Localize` or `LocalizeFormat`.
 
-Generated entries are decorated with "founding" comments indicating the source file and optionally the line where the internationalized string was found, to allow obtaining the context in which the string appears in order to improve translations. This also eases the task of introducing context partitions (see [Contexts](#contexts)).
+Generated entries are decorated with "finding" comments indicating the source file and optionally the line where the internationalized string was found, to allow obtaining the context in which the string appears in order to improve translations. This also eases the task of introducing context partitions (see [Contexts](#contexts)).
 
-If the output file already exists, the tool preserves the existing XML elements (except "founding" comments), i.e., it does not delete any existing entries even if the entry's key is not found anymore in the source code.
+If the output file already exists, the tool preserves the existing XML elements (except "finding" comments), i.e., it does not delete any existing entries even if the entry's key is not found anymore in the source code.
 
 ##### Command Options
 
@@ -61,22 +61,22 @@ If the output file already exists, the tool preserves the existing XML elements 
 | -o &lt;output-file>                            | Output file path                                       |
 | -p &lt;input-files-pattern>                    | Input files name pattern (default: *.cs)               |
 | -r                                             | Scan in input directories recursively                  |
-| -k                                             | Preserve founding comments in output file              |
+| -k                                             | Preserve finding comments in output file              |
 | -d                                             | Mark deprecated entries                                |
-| -l                                             | Include line numbers in founding comments              |
+| -l                                             | Include line numbers in finding comments              |
 | -E &lt;func-name> _[&lt;func-name-2 ...>]_     | Extra methods to be parsed for strings to be localized |
 
 At least one source files directory path must be passed using the `-S` option, and the output file must be specified using the `-o` option.
 
-Input directories are by default not scanned recursively navigating into nested directories. Use the `-r` option to perform recursive scan on the input directories.
+Source files directories are by default not scanned recursively navigating into nested directories. Use the `-r` option to perform recursive scan on the source files directories.
 
 Internationalized strings are by default located by searching for plain strings and interpolated strings that are used as the first argument to methods named `Localize` or `LocalizeFormat`. If you define your own classes that define methods that wrap internationalization functionality (i.e., which internally call `Localizer` methods), then these additional methods can be also parsed using the `-E` option (as long as these methods take the strings to be localized as their first parameter).
 
-Existing "founding" comments in the output file that indicate where a key was found in the source code are not preserved by default. To avoid this behavior, use the option `-k` to keep all "founding" comments.
+Existing "finding" comments in the output file that indicate where a key was found in the source code are not preserved by default. To avoid this behavior, use the option `-k` to keep all "finding" comments.
 
 Using the option `-d` makes the tool add a comment indicating that the entry is deprecated to previously existing entries in the output file which keys do not correspond to a key found in the source code.
 
-By default "founding" comments just indicate the file where a key was found to avoid having too many changes in the translations file during development (even when no new translation keys are introduced). Using the option `-l` makes the tool include the line number where a key was found to "founding" comments.
+By default "finding" comments just indicate the file where a key was found to avoid having too many changes in the translations file during development (even when no new translation keys are introduced). Using the option `-l` makes the tool include the line number where a key was found to "finding" comments.
 
 ##### Parsing Examples
 
@@ -100,7 +100,7 @@ This command analyzes a translations file to indicate the presence of deprecated
 
 At least one input file path must be specified using the `-i` option.
 
-The `-d` option makes the tool to check for the presence of deprecated entries (i.e., entries with no foundings).
+The `-d` option makes the tool to check for the presence of deprecated entries (i.e., entries with no findings).
 
 The `-L` options makes the tool to check for the presence of entries with do not have translations defined for any of the languages passed. Pass `*` to check for entries which do not have a translation for any language.
 

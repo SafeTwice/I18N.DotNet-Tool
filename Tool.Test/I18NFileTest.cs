@@ -223,7 +223,7 @@ namespace I18N.DotNet.Tool.Test
         }
 
         [Fact]
-        public void Parse_UpdateFile_PreserveFoundingComments()
+        public void Parse_UpdateFile_PreserveFindingComments()
         {
             // Prepare
 
@@ -303,7 +303,7 @@ namespace I18N.DotNet.Tool.Test
         }
 
         [Fact]
-        public void Parse_UpdateFile_DeleteFoundingComments()
+        public void Parse_UpdateFile_DeleteFindingComments()
         {
             // Prepare
 
@@ -315,7 +315,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFile = new I18NFile();
             i18nFile.LoadFromFile( m_tempFile );
-            i18nFile.DeleteFoundingComments();
+            i18nFile.DeleteFindingComments();
             i18nFile.CreateEntries( rootContext, true );
             i18nFile.WriteToFile( m_tempFile );
 
@@ -393,7 +393,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFile = new I18NFile();
             i18nFile.LoadFromFile( m_tempFile );
-            i18nFile.DeleteFoundingComments();
+            i18nFile.DeleteFindingComments();
             i18nFile.CreateEntries( rootContext, true );
             i18nFile.CreateDeprecationComments();
             i18nFile.WriteToFile( m_tempFile );

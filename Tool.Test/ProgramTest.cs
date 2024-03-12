@@ -95,7 +95,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFileMock = new Mock<II18NFile>();
             i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( options.OutputFile ) );
-            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFoundingComments() );
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFindingComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateEntries( It.Is<Context>( ctx => ctx == internalContext ), false ) );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.WriteToFile( options.OutputFile ) );
 
@@ -119,7 +119,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Once );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Once );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, false ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Never );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
@@ -163,7 +163,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFileMock = new Mock<II18NFile>();
             i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( options.OutputFile ) );
-            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFoundingComments() );
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFindingComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateEntries( It.Is<Context>( ctx => ctx == internalContext ), false ) );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.WriteToFile( options.OutputFile ) );
 
@@ -187,7 +187,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Once );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Once );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, false ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Never );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
@@ -229,7 +229,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFileMock = new Mock<II18NFile>();
             i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( options.OutputFile ) );
-            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFoundingComments() );
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFindingComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateEntries( It.Is<Context>( ctx => ctx == internalContext ), false ) );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.WriteToFile( options.OutputFile ) );
 
@@ -253,7 +253,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Once );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Once );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, false ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Never );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
@@ -296,7 +296,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFileMock = new Mock<II18NFile>();
             i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( options.OutputFile ) );
-            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFoundingComments() );
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFindingComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateEntries( It.Is<Context>( ctx => ctx == internalContext ), false ) );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateDeprecationComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.WriteToFile( options.OutputFile ) );
@@ -321,7 +321,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Once );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Once );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, false ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Once );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
@@ -334,7 +334,7 @@ namespace I18N.DotNet.Tool.Test
         }
 
         [Fact]
-        public void Generate_PreserveFoundingComments()
+        public void Generate_PreserveFindingComments()
         {
             // Prepare
 
@@ -344,7 +344,7 @@ namespace I18N.DotNet.Tool.Test
             {
                 SourcesDirectories = new string[] { Path.GetTempPath() + @"\TempDir1", Path.GetTempPath() + @"\TempDir2" },
                 OutputFile = "bar.xml",
-                PreserveFoundingComments = true,
+                PreserveFindingComments = true,
             };
 
             Context? internalContext = null;
@@ -387,7 +387,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Never );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Never );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, false ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Never );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
@@ -412,8 +412,8 @@ namespace I18N.DotNet.Tool.Test
                 Recursive = false,
                 SourceFilesPattern = "*.cs",
                 MarkDeprecated = false,
-                PreserveFoundingComments = false,
-                LineIndicationInFoundingComments = false,
+                PreserveFindingComments = false,
+                LineIndicationInFindingComments = false,
                 OutputFile = "bar.xml",
                 ExtraLocalizationFunctions = new string[] { "foo", "bar" },
             };
@@ -435,7 +435,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFileMock = new Mock<II18NFile>();
             i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( options.OutputFile ) );
-            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFoundingComments() );
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFindingComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateEntries( It.Is<Context>( ctx => ctx == internalContext ), false ) );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateDeprecationComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.WriteToFile( options.OutputFile ) );
@@ -460,7 +460,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Once );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Once );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, false ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Never );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
@@ -473,7 +473,7 @@ namespace I18N.DotNet.Tool.Test
         }
 
         [Fact]
-        public void Generate_LineIndicationInFoundingComments()
+        public void Generate_LineIndicationInFindingComments()
         {
             // Prepare
 
@@ -483,7 +483,7 @@ namespace I18N.DotNet.Tool.Test
             {
                 SourcesDirectories = new string[] { Path.GetTempPath() + @"\TempDir1", Path.GetTempPath() + @"\TempDir2" },
                 OutputFile = "bar.xml",
-                LineIndicationInFoundingComments = true,
+                LineIndicationInFindingComments = true,
             };
 
             Context? internalContext = null;
@@ -503,7 +503,7 @@ namespace I18N.DotNet.Tool.Test
 
             var i18nFileMock = new Mock<II18NFile>();
             i18nFileMock.InSequence( callSequence ).Setup( f => f.LoadFromFile( options.OutputFile ) );
-            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFoundingComments() );
+            i18nFileMock.InSequence( callSequence ).Setup( f => f.DeleteFindingComments() );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.CreateEntries( It.Is<Context>( ctx => ctx == internalContext ), true ) );
             i18nFileMock.InSequence( callSequence ).Setup( f => f.WriteToFile( options.OutputFile ) );
 
@@ -527,7 +527,7 @@ namespace I18N.DotNet.Tool.Test
             }
 
             i18nFileMock.Verify( f => f.LoadFromFile( options.OutputFile ), Times.Once );
-            i18nFileMock.Verify( f => f.DeleteFoundingComments(), Times.Once );
+            i18nFileMock.Verify( f => f.DeleteFindingComments(), Times.Once );
             i18nFileMock.Verify( f => f.CreateEntries( internalContext, true ), Times.Once );
             i18nFileMock.Verify( f => f.CreateDeprecationComments(), Times.Never );
             i18nFileMock.Verify( f => f.WriteToFile( options.OutputFile ), Times.Once );
